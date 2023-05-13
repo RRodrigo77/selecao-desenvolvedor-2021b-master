@@ -99,8 +99,36 @@ Você pode encontrar um diagrama sobre o que tem disponível neste banco na imag
         QtdeTracksSold_Jan | QtdeTracksSold_Feb | QtdeTracksSold_Mar | QtdeTracksSold_Apr | QtdeTracksSold_May | QtdeTracksSold_Jun |
         QtdeTracksSold_Jul | QtdeTracksSold_Aug | QtdeTracksSold_Sep | QtdeTracksSold_Oct | QtdeTracksSold_Nov | QtdeTracksSold_Dec
 
+    SELECT emp.FirstName || ' ' || emp.LastName AS supervisor,
+        SUM(inv.Total) AS total_vendido,
+        SUM(ii.Quantity) AS total_faixas_vendidas,
+        COUNT(DISTINCT cus.CustomerId) AS num_clientes
+    FROM employees emp
+    LEFT JOIN customers cus ON emp.EmployeeId = cus.SupportRepId
+    LEFT JOIN invoices inv ON cus.CustomerId = inv.CustomerId
+    LEFT JOIN invoice_items ii ON inv.InvoiceId = ii.InvoiceId
+    WHERE emp.EmployeeId IN (
+    SELECT DISTINCT SupportRepId FROM customers
+    )
+    GROUP BY emp.FirstName, emp.LastName
+
 8 - Criar uma View que possibilite mostrar os dados da lista de supervisores mencionada acima (questão 7), e que possibilite ser filtrada por ano.
     Quero fazer a consulta simplesmente com `select * from vw_lista_supervisores where ano = 2015`.
     Atenção: A resolução dessa questão é a apresentação do script de criação dessa View. E não a criação dela dentro do banco de
         dados que se encontra neste repositório. Se o candidato apenas criar a view dentro do banco de dados mas não apresentar
         o script por escrito na prova, será considerado como não tendo respondido.
+
+    CREATE VIEW vw_lista_supervisores AS
+    SELECT emp.FirstName || ' ' || emp.LastName AS supervisor,
+        SUM(inv.Total) AS total_vendido,
+        SUM(ii.Quantity) AS total_faixas_vendidas,
+        COUNT(DISTINCT cus.CustomerId) AS num_clientes,
+        strftime('%Y', inv.InvoiceDate) AS ano
+    FROM employees emp
+    LEFT JOIN customers cus ON emp.EmployeeId = cus.SupportRepId
+    LEFT JOIN invoices inv ON cus.CustomerId = inv.CustomerId
+    LEFT JOIN invoice_items ii ON inv.InvoiceId = ii.InvoiceId
+    WHERE emp.EmployeeId IN (
+    SELECT DISTINCT SupportRepId FROM customers
+    )
+    GROUP BY emp.FirstName, emp.LastName, ano;
