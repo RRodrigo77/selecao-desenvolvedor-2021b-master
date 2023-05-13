@@ -99,18 +99,41 @@ Você pode encontrar um diagrama sobre o que tem disponível neste banco na imag
         QtdeTracksSold_Jan | QtdeTracksSold_Feb | QtdeTracksSold_Mar | QtdeTracksSold_Apr | QtdeTracksSold_May | QtdeTracksSold_Jun |
         QtdeTracksSold_Jul | QtdeTracksSold_Aug | QtdeTracksSold_Sep | QtdeTracksSold_Oct | QtdeTracksSold_Nov | QtdeTracksSold_Dec
 
-    SELECT emp.FirstName || ' ' || emp.LastName AS supervisor,
-        SUM(inv.Total) AS total_vendido,
-        SUM(ii.Quantity) AS total_faixas_vendidas,
-        COUNT(DISTINCT cus.CustomerId) AS num_clientes
+    SELECT emp.EmployeeId,
+        emp.FirstName || ' ' || emp.LastName AS EmployeeFullName,
+        COUNT(DISTINCT cus.CustomerId) AS QtdeCustomers,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '01' THEN inv.Total END) AS TotalSold_Jan,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '02' THEN inv.Total END) AS TotalSold_Feb,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '03' THEN inv.Total END) AS TotalSold_Mar,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '04' THEN inv.Total END) AS TotalSold_Apr,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '05' THEN inv.Total END) AS TotalSold_May,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '06' THEN inv.Total END) AS TotalSold_Jun,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '07' THEN inv.Total END) AS TotalSold_Jul,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '08' THEN inv.Total END) AS TotalSold_Aug,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '09' THEN inv.Total END) AS TotalSold_Sep,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '10' THEN inv.Total END) AS TotalSold_Oct,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '11' THEN inv.Total END) AS TotalSold_Nov,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '12' THEN inv.Total END) AS TotalSold_Dec,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '01' THEN ii.Quantity END) AS QtdeTracksSold_Jan,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '02' THEN ii.Quantity END) AS QtdeTracksSold_Feb,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '03' THEN ii.Quantity END) AS QtdeTracksSold_Mar,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '04' THEN ii.Quantity END) AS QtdeTracksSold_Apr,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '05' THEN ii.Quantity END) AS QtdeTracksSold_May,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '06' THEN ii.Quantity END) AS QtdeTracksSold_Jun,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '07' THEN ii.Quantity END) AS QtdeTracksSold_Jul,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '08' THEN ii.Quantity END) AS QtdeTracksSold_Aug,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '09' THEN ii.Quantity END) AS QtdeTracksSold_Sep,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '10' THEN ii.Quantity END) AS QtdeTracksSold_Oct,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '11' THEN ii.Quantity END) AS QtdeTracksSold_Nov,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '12' THEN ii.Quantity END) AS QtdeTracksSold_Dec
     FROM employees emp
     LEFT JOIN customers cus ON emp.EmployeeId = cus.SupportRepId
     LEFT JOIN invoices inv ON cus.CustomerId = inv.CustomerId
     LEFT JOIN invoice_items ii ON inv.InvoiceId = ii.InvoiceId
-    WHERE emp.EmployeeId IN (
+    WHERE emp.ReportsTo IS NOT NULL AND emp.EmployeeId IN (
     SELECT DISTINCT SupportRepId FROM customers
     )
-    GROUP BY emp.FirstName, emp.LastName
+    GROUP BY emp.EmployeeId, EmployeeFullName;
 
 8 - Criar uma View que possibilite mostrar os dados da lista de supervisores mencionada acima (questão 7), e que possibilite ser filtrada por ano.
     Quero fazer a consulta simplesmente com `select * from vw_lista_supervisores where ano = 2015`.
@@ -119,16 +142,39 @@ Você pode encontrar um diagrama sobre o que tem disponível neste banco na imag
         o script por escrito na prova, será considerado como não tendo respondido.
 
     CREATE VIEW vw_lista_supervisores AS
-    SELECT emp.FirstName || ' ' || emp.LastName AS supervisor,
-        SUM(inv.Total) AS total_vendido,
-        SUM(ii.Quantity) AS total_faixas_vendidas,
-        COUNT(DISTINCT cus.CustomerId) AS num_clientes,
-        strftime('%Y', inv.InvoiceDate) AS ano
+    SELECT emp.EmployeeId,
+        emp.FirstName || ' ' || emp.LastName AS EmployeeFullName,
+        COUNT(DISTINCT cus.CustomerId) AS QtdeCustomers,
+        strftime('%Y', inv.InvoiceDate) AS Ano,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '01' THEN inv.Total END) AS TotalSold_Jan,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '02' THEN inv.Total END) AS TotalSold_Feb,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '03' THEN inv.Total END) AS TotalSold_Mar,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '04' THEN inv.Total END) AS TotalSold_Apr,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '05' THEN inv.Total END) AS TotalSold_May,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '06' THEN inv.Total END) AS TotalSold_Jun,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '07' THEN inv.Total END) AS TotalSold_Jul,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '08' THEN inv.Total END) AS TotalSold_Aug,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '09' THEN inv.Total END) AS TotalSold_Sep,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '10' THEN inv.Total END) AS TotalSold_Oct,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '11' THEN inv.Total END) AS TotalSold_Nov,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '12' THEN inv.Total END) AS TotalSold_Dec,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '01' THEN ii.Quantity END) AS QtdeTracksSold_Jan,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '02' THEN ii.Quantity END) AS QtdeTracksSold_Feb,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '03' THEN ii.Quantity END) AS QtdeTracksSold_Mar,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '04' THEN ii.Quantity END) AS QtdeTracksSold_Apr,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '05' THEN ii.Quantity END) AS QtdeTracksSold_May,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '06' THEN ii.Quantity END) AS QtdeTracksSold_Jun,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '07' THEN ii.Quantity END) AS QtdeTracksSold_Jul,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '08' THEN ii.Quantity END) AS QtdeTracksSold_Aug,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '09' THEN ii.Quantity END) AS QtdeTracksSold_Sep,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '10' THEN ii.Quantity END) AS QtdeTracksSold_Oct,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '11' THEN ii.Quantity END) AS QtdeTracksSold_Nov,
+        SUM(CASE WHEN strftime('%m', inv.InvoiceDate) = '12' THEN ii.Quantity END) AS QtdeTracksSold_Dec
     FROM employees emp
     LEFT JOIN customers cus ON emp.EmployeeId = cus.SupportRepId
     LEFT JOIN invoices inv ON cus.CustomerId = inv.CustomerId
     LEFT JOIN invoice_items ii ON inv.InvoiceId = ii.InvoiceId
-    WHERE emp.EmployeeId IN (
+    WHERE emp.ReportsTo IS NOT NULL AND emp.EmployeeId IN (
     SELECT DISTINCT SupportRepId FROM customers
     )
-    GROUP BY emp.FirstName, emp.LastName, ano;
+    GROUP BY emp.EmployeeId, EmployeeFullName, Ano;
