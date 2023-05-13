@@ -1,0 +1,11 @@
+{
+  "name": "selecao-desenvolvedor-2021b-master",
+  "version": "1.0.0",
+  "description": "Esta prova consiste em 3 partes: SQL, Frontend (React/Javascript) e Backend (Django/Python).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
