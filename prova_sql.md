@@ -10,17 +10,52 @@ Você pode encontrar um diagrama sobre o que tem disponível neste banco na imag
     Colunas da resposta:
         ArtistName | QtdeAlbums
 
+    SELECT artists.Name AS ArtistName, 
+        COUNT(DISTINCT albums.AlbumId) AS QtdeAlbums 
+        FROM artists 
+        JOIN albums ON artists.ArtistId = albums.ArtistId 
+        GROUP BY artists.ArtistId 
+        ORDER BY QtdeAlbums DESC;
+
+
 2 - Prepare uma consulta que traga os 20 clientes que mais gastaram. (Na tabela invoices há as compras feitas por cada cliente e seu valor)
     Colunas da resposta:
         CustomerFullName | Total
+
+    SELECT c.FirstName || ' ' || c.LastName AS CustomerFullName, 
+        SUM(i.Total) AS Total 
+        FROM customers c 
+        JOIN invoices i ON c.CustomerId = i.CustomerId 
+        GROUP BY c.CustomerId 
+        ORDER BY Total DESC 
+        LIMIT 20;
 
 3 - Listar gênero musical com o valor vendido, e a quantidade de vendas.
     Colunas da resposta:
         Genre | TotalSold | QtdeSold
 
+    SELECT genres.Name AS Genre, 
+        SUM(invoice_items.UnitPrice * invoice_items.Quantity) AS TotalSold,
+        COUNT(DISTINCT invoices.InvoiceId) AS QtdeSold
+        FROM genres 
+        JOIN tracks ON genres.GenreId = tracks.GenreId 
+        JOIN invoice_items ON tracks.TrackId = invoice_items.TrackId 
+        JOIN invoices ON invoice_items.InvoiceId = invoices.InvoiceId 
+        GROUP BY genres.Name 
+        ORDER BY TotalSold DESC;
+
 4 - Listar os albuns com preço, duração total em minutos, tamanho em MB.
     Colunas da resposta:
         AlbumTitle | Price | Duration_minutes | Size_MB
+
+    SELECT albums.Title AS AlbumTitle, 
+        albums.Price AS Price, 
+        ROUND(SUM(tracks.Milliseconds)/60000.0, 2) AS Duration_minutes,
+        ROUND(SUM(tracks.Bytes)/1048576.0, 2) AS Size_MB
+        FROM albums
+        JOIN tracks ON albums.AlbumId = tracks.AlbumId
+        GROUP BY albums.Title
+        ORDER BY albums.Title ASC;
 
 5 - Listar empregados com números de clientes, quanto cada um vendeu até o momento, gênero musical que mais vende em qtd (mais popular), e em valor (mais lucrativo).
     Colunas da resposta:
@@ -29,6 +64,27 @@ Você pode encontrar um diagrama sobre o que tem disponível neste banco na imag
 6 - Consulta que traga a lista de gêneros musicais com 12 colunas (Janeiro a Dezembro) com a qtd de faixas vendidas de um determinado ano a ser especificado num filtro.
     Colunas da resposta:
         GenreId | GenreName | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct | Nov | Dec
+
+    SELECT 
+            g.GenreId, 
+            g.Name AS GenreName,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '01' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Jan,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '02' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Feb,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '03' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Mar,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '04' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Apr,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '05' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS May,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '06' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Jun,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '07' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Jul,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '08' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Aug,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '09' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Sep,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '10' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Oct,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '11' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS Nov,
+            SUM(CASE WHEN strftime('%m', i.InvoiceDate) = '12' AND strftime('%Y', i.InvoiceDate) = :year THEN il.Quantity ELSE 0 END) AS `Dec`
+        FROM genres g
+        INNER JOIN tracks t ON t.GenreId = g.GenreId
+        INNER JOIN invoice_items il ON il.TrackId = t.TrackId
+        INNER JOIN invoices i ON i.InvoiceId = il.InvoiceId
+        GROUP BY g.GenreId
 
 7 - Listar supervisores (aqueles funcionários a quem os outros se reportam)
     Há um funcionário que não se reporta a ninguém, este não precisará vir na listagem.
